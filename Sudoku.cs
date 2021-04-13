@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -12,31 +13,55 @@ namespace SudokuSolver
 
         private int[,] sudokuArray = new int[Size, Size];
 
-        public Sudoku() {}
+        private List<int>[] rows = new List<int>[Size];
+        private List<int>[] columns = new List<int>[Size];
+        private List<int>[,] regions = new List<int>[3,3];
+
+        public Sudoku() {
+            InitLists();
+        }
 
         public Sudoku(string sudokuString)
         {
+            InitLists();
             ParseSudoku(sudokuString);
+        }
+
+        private void InitLists()
+        {
+            for (int i = 0; i < Size; i++)
+            {
+                rows[i] = new List<int>();
+                columns[i] = new List<int>();
+                int[] coordinates = IndexToCoordinates(i, 3);
+                regions[coordinates[0], coordinates[1]] = new List<int>();
+            }
         }
 
         private void ParseSudoku(string sudokuString)
         {
             for (int i = 0; i < sudokuString.Length; i++)
             {
-                int[] coordinates = IndexToCoordinates(i);
+                int[] coordinates = IndexToCoordinates(i, Size);
                 int number = int.Parse(sudokuString[i].ToString());
-                sudokuArray[coordinates[0], coordinates[1]] = number;
+                SetField(coordinates[0], coordinates[1], number);
             }
         }
 
-        private static int[] IndexToCoordinates(int index)
+        private static int[] IndexToCoordinates(int index, int size)
         {
-            return new int[] {index / Size, index % Size};
+            return new int[] {index / size, index % size};
         }
 
         public void SetField(int x, int y, int value)
         {
             sudokuArray[x, y] = value;
+            if (value != 0)
+            {
+                rows[x].Add(value);
+                columns[y].Add(value);
+                regions[x / 3, y / 3].Add(value);
+            }
         }
 
         public int GetField(int x, int y)
@@ -44,18 +69,38 @@ namespace SudokuSolver
             return sudokuArray[x, y];
         }
 
-        public int[] GetRow(int x)
+        private static Boolean AllDifferent(List<int> values)
         {
-            return Enumerable.Range(0, Size)
-                .Select(y => sudokuArray[x, y])
-                .ToArray();
+            return values.Distinct().Count() == values.Count;
         }
 
-        public int[] GetColumn(int y)
+        public Boolean IsValidState()
         {
-            return Enumerable.Range(0, Size)
-                .Select(x => sudokuArray[x, y])
-                .ToArray();
+            for (int i = 0; i < Size; i++)
+            {
+                int[] regionCoordinates = IndexToCoordinates(i, 3);
+                if (!ValidateRow(i) ^ !ValidateColumn(i) ^ !ValidateRegion(regionCoordinates[0], regionCoordinates[1]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public Boolean ValidateRow(int x)
+        {
+            return AllDifferent(rows[x]);
+        }
+
+        public Boolean ValidateColumn(int y)
+        {
+            return AllDifferent(columns[y]);
+        }
+
+        public Boolean ValidateRegion(int regionX, int regionY)
+        {
+
+            return AllDifferent(regions[regionX, regionY]);
         }
 
         public override string ToString()
@@ -80,26 +125,6 @@ namespace SudokuSolver
             }
             sudokuAsString.Append("-------------------------");
             return sudokuAsString.ToString();
-        }
-    }
-
-    class SudokuValidator
-    {
-        public static Boolean IsValidState(Sudoku sudoku)
-        {
-            for (int x = 0; x < Sudoku.Size; x++)
-            {
-                if (!allDifferent(sudoku.GetRow(x)))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private static Boolean allDifferent(int[] values)
-        {
-            return values.Distinct().Count() == values.Length;
         }
     }
 }

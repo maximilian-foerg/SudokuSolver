@@ -28,7 +28,7 @@ namespace SudokuSolver
                 return;
             }
             Sudoku sudoku = new Sudoku(input);
-            if (!SudokuValidator.IsValidState(sudoku))
+            if (!sudoku.IsValidState())
             {
                 Console.WriteLine("You have entered an invalid Sudoku!");
                 return;
