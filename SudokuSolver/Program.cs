@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace SudokuSolver
 {
@@ -39,7 +40,7 @@ namespace SudokuSolver
 
         static Boolean ValidateSudokuInput(string sudokuString)
         {
-            return sudokuString.Length == Sudoku.Size * Sudoku.Size;
+            return Regex.IsMatch(sudokuString, "^[0-9]{81}$");
         }
 
     }

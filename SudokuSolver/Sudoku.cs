@@ -5,11 +5,11 @@ using System.Text;
 
 namespace SudokuSolver
 {
-    class Sudoku
+    public class Sudoku
     {
-        // 600408000403900700090000503009006000002004380000003627940070030070080090310000206
-
         public static readonly int Size = 9;
+
+        private static readonly int Empty = 0;
 
         private int[,] sudokuArray = new int[Size, Size];
 
@@ -56,7 +56,7 @@ namespace SudokuSolver
         public void SetField(int x, int y, int value)
         {
             sudokuArray[x, y] = value;
-            if (value != 0)
+            if (value != Empty)
             {
                 rows[x].Add(value);
                 columns[y].Add(value);
@@ -69,6 +69,18 @@ namespace SudokuSolver
             return sudokuArray[x, y];
         }
 
+        public void ClearField(int x, int y)
+        {
+            int value = sudokuArray[x, y];
+            sudokuArray[x, y] = Empty;
+            if (value != Empty)
+            {
+                rows[x].Remove(value);
+                columns[y].Remove(value);
+                regions[x / 3, y / 3].Remove(value);
+            }
+        }
+
         private static Boolean AllDifferent(List<int> values)
         {
             return values.Distinct().Count() == values.Count;
@@ -76,15 +88,7 @@ namespace SudokuSolver
 
         public Boolean IsValidState()
         {
-            for (int i = 0; i < Size; i++)
-            {
-                int[] regionCoordinates = IndexToCoordinates(i, 3);
-                if (!ValidateRow(i) ^ !ValidateColumn(i) ^ !ValidateRegion(regionCoordinates[0], regionCoordinates[1]))
-                {
-                    return false;
-                }
-            }
-            return true;
+            return ValidateRows() & ValidateColumns() & ValidateRegions();
         }
 
         public Boolean ValidateRow(int x)
@@ -92,15 +96,53 @@ namespace SudokuSolver
             return AllDifferent(rows[x]);
         }
 
+        public Boolean ValidateRows()
+        {
+            for (int x = 0; x < Size; x++)
+            {
+                if (!ValidateRow(x))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public Boolean ValidateColumn(int y)
         {
             return AllDifferent(columns[y]);
         }
 
+        public Boolean ValidateColumns()
+        {
+            for (int y = 0; y < Size; y++)
+            {
+                if (!ValidateColumn(y))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public Boolean ValidateRegion(int regionX, int regionY)
         {
-
             return AllDifferent(regions[regionX, regionY]);
+        }
+
+        public Boolean ValidateRegions()
+        {
+            for (int x = 0; x < 3; x++)
+            {
+                for (int y = 0; y < 3; y++)
+                {
+                    if (!ValidateRegion(x, y))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         public override string ToString()
