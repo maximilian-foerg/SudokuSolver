@@ -2,7 +2,7 @@ using Xunit;
 
 namespace SudokuSolver.Tests
 {
-    public class Sudoku_isValidState
+    public class Sudoku_IsValidState
     {
         [Fact]
         public void ValidateRows_InputIsValid_ReturnTrue()

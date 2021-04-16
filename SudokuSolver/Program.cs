@@ -36,6 +36,10 @@ namespace SudokuSolver
             }
             Console.WriteLine("You have entered the following Sudoku:");
             Console.WriteLine(sudoku);
+            SimpleRecursiveSudokuSolver solver = new SimpleRecursiveSudokuSolver();
+            solver.SolveSudoku(sudoku);
+            Console.WriteLine("The solution:");
+            Console.WriteLine(sudoku);
         }
 
         static Boolean ValidateSudokuInput(string sudokuString)

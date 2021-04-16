@@ -8,82 +8,65 @@ namespace SudokuSolver
     public class Sudoku
     {
         public static readonly int Size = 9;
+        public static readonly int RegionSize = 3;
 
         private static readonly int Empty = 0;
 
-        private int[,] sudokuArray = new int[Size, Size];
+        private int[,] board = new int[Size, Size];
 
-        private List<int>[] rows = new List<int>[Size];
-        private List<int>[] columns = new List<int>[Size];
-        private List<int>[,] regions = new List<int>[3,3];
-
-        public Sudoku() {
-            InitLists();
-        }
+        public Sudoku() {}
 
         public Sudoku(string sudokuString)
         {
-            InitLists();
             ParseSudoku(sudokuString);
-        }
-
-        private void InitLists()
-        {
-            for (int i = 0; i < Size; i++)
-            {
-                rows[i] = new List<int>();
-                columns[i] = new List<int>();
-                int[] coordinates = IndexToCoordinates(i, 3);
-                regions[coordinates[0], coordinates[1]] = new List<int>();
-            }
         }
 
         private void ParseSudoku(string sudokuString)
         {
             for (int i = 0; i < sudokuString.Length; i++)
             {
-                int[] coordinates = IndexToCoordinates(i, Size);
+                int[] coordinates = Util.IndexToCoordinates(i, Size);
                 int number = int.Parse(sudokuString[i].ToString());
                 SetField(coordinates[0], coordinates[1], number);
             }
         }
 
-        private static int[] IndexToCoordinates(int index, int size)
-        {
-            return new int[] {index / size, index % size};
-        }
-
         public void SetField(int x, int y, int value)
         {
-            sudokuArray[x, y] = value;
-            if (value != Empty)
-            {
-                rows[x].Add(value);
-                columns[y].Add(value);
-                regions[x / 3, y / 3].Add(value);
-            }
+            board[x, y] = value;
         }
 
         public int GetField(int x, int y)
         {
-            return sudokuArray[x, y];
+            return board[x, y];
         }
 
         public void ClearField(int x, int y)
         {
-            int value = sudokuArray[x, y];
-            sudokuArray[x, y] = Empty;
-            if (value != Empty)
-            {
-                rows[x].Remove(value);
-                columns[y].Remove(value);
-                regions[x / 3, y / 3].Remove(value);
-            }
+            board[x, y] = Empty;
         }
 
-        private static Boolean AllDifferent(List<int> values)
+        public Boolean IsEmptyField(int x, int y)
         {
-            return values.Distinct().Count() == values.Count;
+            return board[x,y] == Empty;
+        }
+
+        public Boolean IsValidValue(int x, int y, int value)
+        {
+            for (int i = 0; i < Size; i++)
+            {
+                if (board[x, i] == value ^ board[i, y] == value)
+                    return false;
+            }
+            for (int rx = 0; rx < RegionSize; rx++)
+            {
+                for (int ry = 0; ry < RegionSize; ry++)
+                {
+                    if (board[(x / RegionSize) * RegionSize + rx, (y / RegionSize) * RegionSize + ry] == value)
+                        return false;
+                }
+            }
+            return true;
         }
 
         public Boolean IsValidState()
@@ -91,16 +74,18 @@ namespace SudokuSolver
             return ValidateRows() & ValidateColumns() & ValidateRegions();
         }
 
-        public Boolean ValidateRow(int x)
+        public Boolean IsValidRow(int x)
         {
-            return AllDifferent(rows[x]);
+            IEnumerable<int> row = Util.SliceRow(board, x);
+            IEnumerable<int> values = from val in row where val != 0 select val;
+            return Util.AllDifferent(values);
         }
 
         public Boolean ValidateRows()
         {
             for (int x = 0; x < Size; x++)
             {
-                if (!ValidateRow(x))
+                if (!IsValidRow(x))
                 {
                     return false;
                 }
@@ -108,16 +93,18 @@ namespace SudokuSolver
             return true;
         }
 
-        public Boolean ValidateColumn(int y)
+        public Boolean IsValidColumn(int y)
         {
-            return AllDifferent(columns[y]);
+            IEnumerable<int> column = Util.SliceColumn(board, y);
+            IEnumerable<int> values = from val in column where val != 0 select val;
+            return Util.AllDifferent(values);
         }
 
         public Boolean ValidateColumns()
         {
             for (int y = 0; y < Size; y++)
             {
-                if (!ValidateColumn(y))
+                if (!IsValidColumn(y))
                 {
                     return false;
                 }
@@ -125,18 +112,24 @@ namespace SudokuSolver
             return true;
         }
 
-        public Boolean ValidateRegion(int regionX, int regionY)
+        public Boolean IsValidRegion(int regionX, int regionY)
         {
-            return AllDifferent(regions[regionX, regionY]);
+            int fromX = regionX * RegionSize;
+            int toX = fromX + RegionSize;
+            int fromY = regionY * RegionSize;
+            int toY = fromY + RegionSize;
+            IEnumerable<int> region = Util.SliceRegion(board, fromX, toX, fromY, toY);
+            IEnumerable<int> values = from val in region where val != 0 select val;
+            return Util.AllDifferent(values);
         }
 
         public Boolean ValidateRegions()
         {
-            for (int x = 0; x < 3; x++)
+            for (int x = 0; x < RegionSize; x++)
             {
-                for (int y = 0; y < 3; y++)
+                for (int y = 0; y < RegionSize; y++)
                 {
-                    if (!ValidateRegion(x, y))
+                    if (!IsValidRegion(x, y))
                     {
                         return false;
                     }
@@ -145,28 +138,72 @@ namespace SudokuSolver
             return true;
         }
 
+        public Boolean IsCompletelyFilled()
+        {
+            for (int x = 0; x < Sudoku.Size; x++)
+            {
+                for (int y = 0; y < Sudoku.Size; y++)
+                {
+                    if (this.IsEmptyField(x, y))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public Boolean IsSolved()
+        {
+            return this.IsCompletelyFilled() & this.IsValidState();
+        }
+
         public override string ToString()
         {
             StringBuilder sudokuAsString = new StringBuilder();
+            String lineSeparator = new String('-', Size * 2 + RegionSize * 2 + 1);
             for (int x = 0; x < Size; x++)
             {
-                if (x % 3 == 0)
+                if (x % RegionSize == 0)
                 {
-                    sudokuAsString.Append("-------------------------\n");
+                    sudokuAsString.Append(lineSeparator + "\n");
                 }
                 for (int y = 0; y < Size; y++)
                 {
-                    if (y % 3 == 0)
+                    if (y % RegionSize == 0)
                     {
                         sudokuAsString.Append("| ");
                     }
-                    int fieldValue = sudokuArray[x,y];
-                    sudokuAsString.Append(fieldValue == 0 ? "  " : fieldValue + " ");
+                    int fieldValue = board[x,y];
+                    sudokuAsString.Append(fieldValue == Empty ? "  " : fieldValue + " ");
                 }
                 sudokuAsString.Append("|\n");
             }
-            sudokuAsString.Append("-------------------------");
+            sudokuAsString.Append(lineSeparator);
             return sudokuAsString.ToString();
+        }
+
+        public override bool Equals(System.Object obj)
+        {
+            Sudoku other = obj as Sudoku;
+            if (other == null)
+            {
+                return false;
+            }
+            for (int x = 0; x < Size; x++)
+            {
+                for (int y = 0; y < Size; y++)
+                {
+                    if (this.GetField(x, y) != other.GetField(x, y))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return board.GetHashCode();
         }
     }
 }
