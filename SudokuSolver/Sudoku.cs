@@ -10,7 +10,7 @@ namespace SudokuSolver
         public static readonly int Size = 9;
         public static readonly int RegionSize = 3;
 
-        private static readonly int Empty = 0;
+        private static readonly int Unassigned = 0;
 
         private int[,] board = new int[Size, Size];
 
@@ -21,34 +21,59 @@ namespace SudokuSolver
             ParseSudoku(sudokuString);
         }
 
+        public Sudoku Clone()
+        {
+            return (Sudoku) this.MemberwiseClone();
+        }
+
         private void ParseSudoku(string sudokuString)
         {
             for (int i = 0; i < sudokuString.Length; i++)
             {
                 int[] coordinates = Util.IndexToCoordinates(i, Size);
                 int number = int.Parse(sudokuString[i].ToString());
-                SetField(coordinates[0], coordinates[1], number);
+                SetFieldValue(coordinates[0], coordinates[1], number);
             }
         }
 
-        public void SetField(int x, int y, int value)
+        public void SetFieldValue(int x, int y, int value)
         {
             board[x, y] = value;
         }
 
-        public int GetField(int x, int y)
+        public void SetFieldValue(Field f, int value)
+        {
+            this.SetFieldValue(f.x, f.y, value);
+        }
+
+        public int GetFieldValue(int x, int y)
         {
             return board[x, y];
         }
 
-        public void ClearField(int x, int y)
+        public int GetFieldValue(Field f)
         {
-            board[x, y] = Empty;
+            return this.GetFieldValue(f.x, f.y);
         }
 
-        public Boolean IsEmptyField(int x, int y)
+        public void ClearField(int x, int y)
         {
-            return board[x,y] == Empty;
+            board[x, y] = Unassigned;
+        }
+
+        public void ClearField(Field f)
+        {
+            this.ClearField(f.x, f.y);
+        }
+
+        public Boolean IsUnassigned(int x, int y)
+        {
+            return board[x,y] == Unassigned;
+        }
+
+        public Boolean IsUnassigned(Field f)
+        {
+            return this.IsUnassigned(f.x, f.y);
         }
 
         public Boolean IsValidValue(int x, int y, int value)
@@ -67,6 +92,11 @@ namespace SudokuSolver
                 }
             }
             return true;
+        }
+
+        public Boolean IsValidValue(Field f, int value)
+        {
+            return this.IsValidValue(f.x, f.y, value);
         }
 
         public Boolean IsValidState()
@@ -144,7 +174,7 @@ namespace SudokuSolver
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    if (this.IsEmptyField(x, y))
+                    if (this.IsUnassigned(x, y))
                         return false;
                 }
             }
@@ -173,7 +203,7 @@ namespace SudokuSolver
                         sudokuAsString.Append("| ");
                     }
                     int fieldValue = board[x,y];
-                    sudokuAsString.Append(fieldValue == Empty ? "  " : fieldValue + " ");
+                    sudokuAsString.Append(fieldValue == Unassigned ? "  " : fieldValue + " ");
                 }
                 sudokuAsString.Append("|\n");
             }
@@ -192,7 +222,7 @@ namespace SudokuSolver
             {
                 for (int y = 0; y < Size; y++)
                 {
-                    if (this.GetField(x, y) != other.GetField(x, y))
+                    if (this.GetFieldValue(x, y) != other.GetFieldValue(x, y))
                     {
                         return false;
                     }
@@ -204,6 +234,18 @@ namespace SudokuSolver
         public override int GetHashCode()
         {
             return board.GetHashCode();
+        }
+    }
+
+    public class Field
+    {
+        public int x;
+        public int y;
+
+        public Field(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
         }
     }
 }

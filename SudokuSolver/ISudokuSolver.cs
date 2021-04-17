@@ -4,6 +4,6 @@ namespace SudokuSolver
 {
     public interface ISudokuSolver
     {
-        void SolveSudoku(Sudoku sudoku);
+        Boolean SolveSudoku(Sudoku sudoku);
     }
 }

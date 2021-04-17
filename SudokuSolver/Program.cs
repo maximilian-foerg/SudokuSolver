@@ -5,46 +5,88 @@ namespace SudokuSolver
 {
     class Program
     {
+        private static readonly string sudokuStringRegex = "^\\d{" + (Sudoku.Size * Sudoku.Size) + "}$";
 
         static void Main(string[] args)
         {
             Console.WriteLine("*** SUDOKU SOLVER ***");
-            do
+            if (args.Length != 0)
             {
-                Console.WriteLine("Please enter a Sudoku in one line or type 'exit' to end application.");
-                var input = Console.ReadLine();
-                if (input == "exit")
+                Sudoku sudoku;
+                switch (args[0])
                 {
-                    break;
+                    case "-f":
+                        sudoku = HandleFileInput(args[1]);
+                        SolveSudoku(sudoku);
+                        break;
+                    case "-s":
+                        sudoku = HandleSudokuInput(args[1]);
+                        SolveSudoku(sudoku);
+                        break;
+                    case "-h":
+                        Console.WriteLine("Following commands are available:");
+                        Console.WriteLine("-f [filename]        Solve Sudoku from specified file [filename]");
+                        Console.WriteLine("-s [sudokuString]    Solve Sudoku from string");
+                        Console.WriteLine("-h                   Show help (this text)");
+                        break;
+                    default:
+                        Console.Write("Unknown command line argument. Use -h to show help.");
+                        break;
                 }
-                HandleSudokuInput(input);
-            } while(true);
+            }
+            else
+            {
+                Console.WriteLine("No command line arguments found. Use -h to show help.");
+            }   
         }
 
-        static void HandleSudokuInput(string input)
+        static Sudoku HandleFileInput(string filename)
+        {
+            Sudoku sudoku = SudokuParser.ReadSudokuFromFile(filename);
+            if (!sudoku.IsValidState())
+            {
+                Console.WriteLine("You have entered an invalid Sudoku!");
+                System.Environment.Exit(1);
+            }
+            return sudoku;
+        }
+
+        static Sudoku HandleSudokuInput(string input)
         {
             if (!ValidateSudokuInput(input))
             {
                 Console.WriteLine("You have entered an invalid string!");
-                return;
+                System.Environment.Exit(1);
             }
             Sudoku sudoku = new Sudoku(input);
             if (!sudoku.IsValidState())
             {
                 Console.WriteLine("You have entered an invalid Sudoku!");
-                return;
+                System.Environment.Exit(1);
             }
+            return sudoku;
+        }
+
+        static void SolveSudoku(Sudoku sudoku)
+        {
             Console.WriteLine("You have entered the following Sudoku:");
             Console.WriteLine(sudoku);
-            SimpleRecursiveSudokuSolver solver = new SimpleRecursiveSudokuSolver();
-            solver.SolveSudoku(sudoku);
-            Console.WriteLine("The solution:");
-            Console.WriteLine(sudoku);
+            BacktrackingSudokuSolver solver = new BacktrackingSudokuSolver();
+            Boolean isSolved = solver.SolveSudoku(sudoku);
+            if (isSolved)
+            {
+                Console.WriteLine("A possible solution of this sudoku:");
+                Console.WriteLine(sudoku);
+            }
+            else
+            {
+                Console.WriteLine("This sudoku can't be solved!");
+            }
         }
 
         static Boolean ValidateSudokuInput(string sudokuString)
         {
-            return Regex.IsMatch(sudokuString, "^[0-9]{81}$");
+            return Regex.IsMatch(sudokuString, sudokuStringRegex);
         }
 
     }
