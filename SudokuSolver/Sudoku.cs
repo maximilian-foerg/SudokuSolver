@@ -9,6 +9,7 @@ namespace SudokuSolver
     {
         public static readonly int Size = 9;
         public static readonly int RegionSize = 3;
+        public static readonly IEnumerable<int> PossibleValues = Enumerable.Range(1, Sudoku.Size);
 
         private static readonly int Unassigned = 0;
 
@@ -246,6 +247,21 @@ namespace SudokuSolver
         {
             this.x = x;
             this.y = y;
+        }
+
+        public override bool Equals(System.Object obj)
+        {
+            Field other = obj as Field;
+            if (other == null)
+            {
+                return false;
+            }
+            return this.GetHashCode() == other.GetHashCode();
+        }
+
+        public override int GetHashCode()
+        {
+            return x * Sudoku.Size + y;
         }
     }
 }

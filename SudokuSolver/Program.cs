@@ -71,16 +71,17 @@ namespace SudokuSolver
         {
             Console.WriteLine("You have entered the following Sudoku:");
             Console.WriteLine(sudoku);
-            BacktrackingSudokuSolver solver = new BacktrackingSudokuSolver();
-            Boolean isSolved = solver.SolveSudoku(sudoku);
-            if (isSolved)
+            ConstraintPropagationSudokuSolver solver = new ConstraintPropagationSudokuSolver();
+            Sudoku assignment = solver.SolveSudoku(sudoku);
+            if (assignment.IsSolved())
             {
                 Console.WriteLine("A possible solution of this sudoku:");
-                Console.WriteLine(sudoku);
+                Console.WriteLine(assignment);
             }
             else
             {
                 Console.WriteLine("This sudoku can't be solved!");
+                Console.WriteLine(assignment);
             }
         }
 

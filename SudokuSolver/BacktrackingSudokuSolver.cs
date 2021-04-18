@@ -6,24 +6,22 @@ namespace SudokuSolver
 {
     public class BacktrackingSudokuSolver : ISudokuSolver
     {
-        IEnumerable<int> possibleValues = Enumerable.Range(1, Sudoku.Size);
-
         public BacktrackingSudokuSolver() {}
 
-        public Boolean SolveSudoku(Sudoku sudoku)
+        public Sudoku SolveSudoku(Sudoku sudoku)
         {
             List<Field> unassignedFields = this.GetUnassignedFields(sudoku);
             return this.SolveSudoku(sudoku, unassignedFields, 0);
         }
 
-        private Boolean SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
+        private Sudoku SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
         {
             if (fieldIndex == unassignedFields.Count())
             {
-                return sudoku.IsSolved();
+                return sudoku;
             }
             Field nextField = unassignedFields.ElementAt(fieldIndex);
-            foreach (int val in possibleValues)
+            foreach (int val in Sudoku.PossibleValues)
             {
                 if (sudoku.IsValidValue(nextField, val))
                 {
@@ -31,7 +29,7 @@ namespace SudokuSolver
                     SolveSudoku(sudoku, unassignedFields, fieldIndex + 1);
                     if (sudoku.IsSolved())
                     {
-                        return true;
+                        return sudoku;
                     }
                     else
                     {
@@ -39,7 +37,7 @@ namespace SudokuSolver
                     }
                 }
             }
-            return false;
+            return sudoku;
         }
 
         private List<Field> GetUnassignedFields(Sudoku sudoku)

@@ -16,6 +16,13 @@ namespace SudokuSolver
             return new int[] {index / size, index % size};
         }
 
+        public static HashSet<T> Subtract<T>(HashSet<T> set, IEnumerable<T> other)
+        {
+            HashSet<T> clone = new HashSet<T>(set);
+            clone.ExceptWith(other);
+            return clone;
+        }
+
         public static IEnumerable<T> SliceRow<T>(T[,] array, int row)
         {
             for (int i = 0; i < array.GetLength(0); i++)
