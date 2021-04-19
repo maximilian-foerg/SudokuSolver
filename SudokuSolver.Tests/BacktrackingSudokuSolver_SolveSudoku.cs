@@ -19,10 +19,9 @@ namespace SudokuSolver.Tests
         public void SolveSudoku_InputIsUnsolvable_ReturnSolution()
         {
             Sudoku sudoku = new Sudoku("600408000403900700090000503009006000002044380000003627940070030070080090310000206");
-            Sudoku solution = new Sudoku("600408000403900700090000503009006000002044380000003627940070030070080090310000206");
             BacktrackingSudokuSolver solver = new BacktrackingSudokuSolver();
             Sudoku assignment = solver.SolveSudoku(sudoku);
-            Assert.Equal(assignment, solution);
+            Assert.False(assignment.IsSolved(), "This sudoku should be unsolvable...");
         }
     }
 }

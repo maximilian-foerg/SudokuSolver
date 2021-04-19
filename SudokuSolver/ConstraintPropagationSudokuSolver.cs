@@ -31,14 +31,14 @@ namespace SudokuSolver
             Field f = dstore.GetFieldWithSmallestDomain();
             if (f == null)
             {
-                // There's no field with a domain.Count > 1 left, the sudoku is filled completely
+                // There's no field with a domain size > 1 left, the sudoku is filled completely
                 return dstore.ToSudoku();
             }
+            // Try to solve the sudoku with every possible value of the field's domain
             HashSet<int> domain = dstore.GetDomain(f);
             foreach (int val in domain)
             {
-                // Try to solve the sudoku with every possible value of the field's domain
-                DomainStore dstoreClone = dstore.Clone();
+                DomainStore dstoreClone = new DomainStore(dstore);
                 dstoreClone.SetDomain(f, new HashSet<int>() {val});
                 try
                 {
@@ -50,7 +50,8 @@ namespace SudokuSolver
                 }
                 catch (UnsolvableStateException)
                 {
-                    // Prune this DomainStore
+                    // Constraint propagation unveiled a field with an empty domain, i.e. the current assignment can't be solved
+                    // Prune this DomainStore and take a step back
                     continue;
                 }
             }
@@ -201,9 +202,16 @@ namespace SudokuSolver
             }
         }
 
-        public DomainStore Clone()
+        public DomainStore(DomainStore dstore)
         {
-            return (DomainStore) this.MemberwiseClone();
+            InitFieldsByDomainSize();
+            for (int x = 0; x < Sudoku.Size; x++)
+            {
+                for (int y = 0; y < Sudoku.Size; y++)
+                {
+                    this.SetDomain(x, y, dstore.GetDomain(x, y));
+                }
+            }
         }
 
         private void InitFieldsByDomainSize()
@@ -298,6 +306,7 @@ namespace SudokuSolver
         public Field GetFieldWithSmallestDomain()
         {
             Field field = null;
+            // Fields with a domain size of 1 (index 0) are ignored, as their value is already fixed
             for (int i = 1; i < Sudoku.Size; i++)
             {
                 if (fieldsByDomainSize[i].Count > 0)
