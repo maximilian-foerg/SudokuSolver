@@ -9,7 +9,6 @@ namespace SudokuSolver
 
         static void Main(string[] args)
         {
-            Console.WriteLine("*** SUDOKU SOLVER ***");
             if (args.Length != 0)
             {
                 Sudoku sudoku;
@@ -71,7 +70,7 @@ namespace SudokuSolver
         {
             Console.WriteLine("You have entered the following Sudoku:");
             Console.WriteLine(sudoku);
-            ConstraintPropagationSudokuSolver solver = new ConstraintPropagationSudokuSolver();
+            ISudokuSolver solver = new ConstraintPropagationSudokuSolver();
             Sudoku assignment = solver.SolveSudoku(sudoku);
             if (assignment.IsSolved())
             {
@@ -81,7 +80,6 @@ namespace SudokuSolver
             else
             {
                 Console.WriteLine("This sudoku can't be solved!");
-                Console.WriteLine(assignment);
             }
         }
 
