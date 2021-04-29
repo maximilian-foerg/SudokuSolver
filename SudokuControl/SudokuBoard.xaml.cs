@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,16 +15,23 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using SudokuLibrary;
+
 namespace SudokuControl
 {
     /// <summary>
-    /// Interaction logic for SudokuControl.xaml
+    /// Interaction logic for SudokuBoard.xaml
     /// </summary>
-    public partial class SudokuControl : UserControl
+    public partial class SudokuBoard : UserControl
     {
-        public SudokuControl()
+        public SudokuBoard()
         {
             InitializeComponent();
+        }
+
+        public void DisplaySudoku(Sudoku sudoku)
+        {
+            SudokuGrid.ItemsSource = sudoku.Board;
         }
     }
 }

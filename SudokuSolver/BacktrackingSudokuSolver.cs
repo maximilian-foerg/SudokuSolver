@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using SudokuLibrary;
+
 namespace SudokuSolver
 {
     public class BacktrackingSudokuSolver : ISudokuSolver
@@ -10,22 +12,22 @@ namespace SudokuSolver
 
         public Sudoku SolveSudoku(Sudoku sudoku)
         {
-            List<Field> unassignedFields = this.GetUnassignedFields(sudoku);
+            List<Field> unassignedFields = GetUnassignedFields(sudoku);
             return this.SolveSudoku(sudoku, unassignedFields, 0);
         }
 
         private Sudoku SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
         {
-            if (fieldIndex == unassignedFields.Count())
+            if (fieldIndex == unassignedFields.Count)
             {
                 return sudoku;
             }
             Field nextField = unassignedFields.ElementAt(fieldIndex);
-            foreach (int val in Sudoku.PossibleValues)
+            foreach (int val in Sudoku.possibleDigits)
             {
-                if (sudoku.IsValidValue(nextField, val))
+                if (sudoku.IsValidDigit(nextField, val))
                 {
-                    sudoku.SetFieldValue(nextField, val);
+                    sudoku.SetCellDigit(nextField, val);
                     SolveSudoku(sudoku, unassignedFields, fieldIndex + 1);
                     if (sudoku.IsSolved())
                     {
@@ -33,16 +35,16 @@ namespace SudokuSolver
                     }
                     else
                     {
-                        sudoku.ClearField(nextField);
+                        sudoku.ClearCell(nextField);
                     }
                 }
             }
             return sudoku;
         }
 
-        private List<Field> GetUnassignedFields(Sudoku sudoku)
+        private static List<Field> GetUnassignedFields(Sudoku sudoku)
         {
-            List<Field> unassignedFields = new List<Field>();
+            List<Field> unassignedFields = new();
             for (int x = 0; x < Sudoku.Size; x++)
             {
                 for (int y = 0; y < Sudoku.Size; y++)

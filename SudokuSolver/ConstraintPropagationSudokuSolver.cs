@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using SudokuLibrary;
+
 namespace SudokuSolver
 {
     public class ConstraintPropagationSudokuSolver : ISudokuSolver
     {
         public Sudoku SolveSudoku(Sudoku sudoku)
         {
-            DomainStore dstore = new DomainStore(sudoku);
+            DomainStore dstore = new(sudoku);
             return Search(dstore);
         }
 
@@ -36,10 +38,10 @@ namespace SudokuSolver
             }
             // Try to solve the sudoku with every possible value of the field's domain
             HashSet<int> domain = dstore.GetDomain(f);
-            foreach (int val in domain)
+            foreach (int digit in domain)
             {
-                DomainStore dstoreClone = new DomainStore(dstore);
-                dstoreClone.SetDomain(f, new HashSet<int>() {val});
+                DomainStore dstoreClone = new(dstore);
+                dstoreClone.SetDomain(f, new HashSet<int>() {digit});
                 try
                 {
                     Sudoku assignment = this.Search(dstoreClone);
@@ -70,15 +72,15 @@ namespace SudokuSolver
         {
             Boolean domainsHaveChanged = false;
             // Go through the fields and remeber the values you see
-            HashSet<int> seenValues = new HashSet<int>();
+            HashSet<int> seenDigits = new();
             foreach (Field f in fields)
             {
                 if (dstore.GetDomainSize(f) == 1)
                 {
                     HashSet<int> domain = dstore.GetDomain(f);
-                    foreach (int val in domain)
+                    foreach (int digit in domain)
                     {
-                        seenValues.Add(val);
+                        seenDigits.Add(digit);
                         break;
                     }
                 }
@@ -92,8 +94,8 @@ namespace SudokuSolver
                     continue;
                 }
                 HashSet<int> domain = dstore.GetDomain(f);
-                HashSet<int> impossibleValues = new HashSet<int>(seenValues);
-                HashSet<int> subtraction = Util.Subtract(domain, impossibleValues);
+                HashSet<int> impossibleValues = new(seenDigits);
+                HashSet<int> subtraction = SudokuUtil.Subtract(domain, impossibleValues);
                 // Prune this try if no value can't be assigned to a field
                 if (subtraction.Count == 0)
                 {
@@ -114,10 +116,10 @@ namespace SudokuSolver
             Boolean domainsHaveChanged = false;
             for (int x = 0; x < Sudoku.Size; x++)
             {
-                List<Field> row = new List<Field>();
+                List<Field> row = new();
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    Field f = new Field(x, y);
+                    Field f = new (x, y);
                     row.Add(f);
                 }
                 domainsHaveChanged ^= Eliminate(dstore, row);
@@ -130,10 +132,10 @@ namespace SudokuSolver
             Boolean domainsHaveChanged = false;
             for (int y = 0; y < Sudoku.Size; y++)
             {
-                List<Field> column = new List<Field>();
+                List<Field> column = new();
                 for (int x = 0; x < Sudoku.Size; x++)
                 {
-                    Field f = new Field(x, y);
+                    Field f = new(x, y);
                     column.Add(f);
                 }
                 domainsHaveChanged ^= Eliminate(dstore, column);
@@ -146,12 +148,12 @@ namespace SudokuSolver
             Boolean domainsHaveChanged = false;
             for (int i = 0; i < Sudoku.Size; i++)
             {
-                List<Field> region = new List<Field>();
+                List<Field> region = new();
                 for (int j = 0; j < Sudoku.Size; j++)
                 {
                     int x = (i / Sudoku.RegionSize) * Sudoku.RegionSize + j / Sudoku.RegionSize;
                     int y = (i % Sudoku.RegionSize) * Sudoku.RegionSize + j % Sudoku.RegionSize;
-                    Field f = new Field(x, y);
+                    Field f = new(x, y);
                     region.Add(f);
                 }
                 domainsHaveChanged ^= Eliminate(dstore, region);
@@ -168,8 +170,8 @@ namespace SudokuSolver
 
     class DomainStore
     {
-        private HashSet<int>[,] store = new HashSet<int>[Sudoku.Size, Sudoku.Size];
-        private HashSet<Field>[] fieldsByDomainSize = new HashSet<Field>[Sudoku.Size];
+        private readonly HashSet<int>[,] store = new HashSet<int>[Sudoku.Size, Sudoku.Size];
+        private readonly HashSet<Field>[] fieldsByDomainSize = new HashSet<Field>[Sudoku.Size];
 
         public DomainStore()
         {
@@ -178,7 +180,7 @@ namespace SudokuSolver
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    this.SetDomain(x, y, Sudoku.PossibleValues);
+                    this.SetDomain(x, y, Sudoku.possibleDigits);
                 }
             }
         }
@@ -192,11 +194,11 @@ namespace SudokuSolver
                 {
                     if (sudoku.IsUnassigned(x, y))
                     {
-                        this.SetDomain(x, y, Sudoku.PossibleValues);
+                        this.SetDomain(x, y, Sudoku.possibleDigits);
                     }
                     else
                     {
-                        this.AddDomainValue(x, y, sudoku.GetFieldValue(x, y));
+                        this.AddDomainValue(x, y, sudoku.GetCellDigit(x, y));
                     }
                 }
             }
@@ -229,7 +231,7 @@ namespace SudokuSolver
 
         public HashSet<int> GetDomain(Field f)
         {
-            return this.GetDomain(f.x, f.y);
+            return this.GetDomain(f.X, f.Y);
         }
 
         public int GetDomainSize(int x, int y)
@@ -239,12 +241,12 @@ namespace SudokuSolver
 
         public int GetDomainSize(Field f)
         {
-            return this.GetDomainSize(f.x, f.y);
+            return this.GetDomainSize(f.X, f.Y);
         }
 
         public void SetDomain(int x, int y, IEnumerable<int> domain)
         {
-            Field f = new Field(x, y);
+            Field f = new(x, y);
             if (this.GetDomain(f) == null)
             {
                 store[x, y] = new HashSet<int>();
@@ -261,12 +263,12 @@ namespace SudokuSolver
 
         public void SetDomain(Field f, IEnumerable<int> domain)
         {
-            this.SetDomain(f.x, f.y, domain);
+            this.SetDomain(f.X, f.Y, domain);
         }
 
         public void AddDomainValue(int x, int y, int val)
         {
-            Field f = new Field(x, y);
+            Field f = new(x, y);
             if (this.GetDomain(f) == null)
             {
                 store[x, y] = new HashSet<int>() {val};
@@ -283,7 +285,7 @@ namespace SudokuSolver
 
         public void AddDomainValue(Field f, int val)
         {
-            this.AddDomainValue(f.x, f.y, val);
+            this.AddDomainValue(f.X, f.Y, val);
         }
 
         public void RemoveDomainValue(int x, int y, int val)
@@ -300,7 +302,7 @@ namespace SudokuSolver
 
         public void RemoveDomainValue(Field f, int val)
         {
-            this.RemoveDomainValue(f.x, f.y, val);
+            this.RemoveDomainValue(f.Y, f.Y, val);
         }
 
         public Field GetFieldWithSmallestDomain()
@@ -324,7 +326,7 @@ namespace SudokuSolver
 
         public Sudoku ToSudoku()
         {
-            Sudoku sudoku = new Sudoku();
+            Sudoku sudoku = new();
             for (int x = 0; x < Sudoku.Size; x++)
             {
                 for (int y = 0; y < Sudoku.Size; y++)
@@ -334,13 +336,13 @@ namespace SudokuSolver
                     {
                         foreach (int val in domain)
                         {
-                            sudoku.SetFieldValue(x, y, val);
+                            sudoku.SetCellDigit(x, y, val);
                             break;
                         }
                     }
                     else
                     {
-                        sudoku.ClearField(x, y);
+                        sudoku.ClearCell(x, y);
                     }
                 }
             }
@@ -359,7 +361,7 @@ namespace SudokuSolver
                     {
                         dstoreAsString.Append(" " + val);
                     }
-                    dstoreAsString.Append("\n");
+                    dstoreAsString.Append('\n');
                 }
             }
             return dstoreAsString.ToString();

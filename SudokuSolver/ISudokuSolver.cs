@@ -1,4 +1,4 @@
-using System;
+using SudokuLibrary;
 
 namespace SudokuSolver
 {
