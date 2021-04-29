@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using SudokuLibrary;
 
@@ -41,7 +29,15 @@ namespace SudokuSolver
             if (result == true)
             {
                 string filename = dialog.FileName;
-                sudoku = SudokuParser.ReadSudokuFromFile(filename);
+                try
+                {
+                    sudoku = SudokuParser.FromFile(filename);
+                }
+                catch (InvalidSudokuFormatException except)
+                {
+                    MessageBox.Show(except.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 sudokuBoard.DisplaySudoku(sudoku);
             }
         }
@@ -56,13 +52,24 @@ namespace SudokuSolver
             if (result == true)
             {
                 string sudokuString = dialog.SudokuString;
-                sudoku = SudokuParser.ParseSudoku(sudokuString);
+                sudoku = SudokuParser.FromString(sudokuString);
                 sudokuBoard.DisplaySudoku(sudoku);
             }
         }
 
+        private void ClearSudoku(object sender, RoutedEventArgs e)
+        {
+            sudoku = new();
+            sudokuBoard.DisplaySudoku(sudoku);
+        }
+
         private void SolveSudoku(object sender, RoutedEventArgs e)
         {
+            if (!sudoku.IsValidState())
+            {
+                MessageBox.Show("This sudoku is not in an valid state.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             ComboBoxItem selectedItem = (ComboBoxItem) solverComboBox.SelectedItem;
             string solverName = selectedItem.Content.ToString();
             ISudokuSolver solver;

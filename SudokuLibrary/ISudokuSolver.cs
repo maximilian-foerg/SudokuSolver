@@ -1,6 +1,6 @@
 using SudokuLibrary;
 
-namespace SudokuSolver
+namespace SudokuLibrary
 {
     public interface ISudokuSolver
     {

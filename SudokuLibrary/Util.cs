@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SudokuLibrary
 {
-    public class SudokuUtil
+    public class Util
     {
         public static bool AllDifferent<T>(IEnumerable<T> array)
         {

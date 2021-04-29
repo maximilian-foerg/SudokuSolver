@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using SudokuLibrary;
-
-namespace SudokuSolver
+namespace SudokuLibrary
 {
     public class ConstraintPropagationSudokuSolver : ISudokuSolver
     {
@@ -95,7 +93,7 @@ namespace SudokuSolver
                 }
                 HashSet<int> domain = dstore.GetDomain(f);
                 HashSet<int> impossibleValues = new(seenDigits);
-                HashSet<int> subtraction = SudokuUtil.Subtract(domain, impossibleValues);
+                HashSet<int> subtraction = Util.Subtract(domain, impossibleValues);
                 // Prune this try if no value can't be assigned to a field
                 if (subtraction.Count == 0)
                 {

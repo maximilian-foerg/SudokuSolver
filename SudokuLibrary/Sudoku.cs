@@ -118,7 +118,7 @@ namespace SudokuLibrary
         {
             IEnumerable<Cell> row = board[x];
             IEnumerable<int?> digits = from cell in row where cell.Digit != null select cell.Digit;
-            return SudokuUtil.AllDifferent(digits);
+            return Util.AllDifferent(digits);
         }
 
         public bool ValidateRows()
@@ -137,7 +137,7 @@ namespace SudokuLibrary
         {
             IEnumerable<Cell> column = from row in board select row[y];
             IEnumerable<int?> digits = from cell in column where cell.Digit != null select cell.Digit;
-            return SudokuUtil.AllDifferent(digits);
+            return Util.AllDifferent(digits);
         }
 
         public bool ValidateColumns()
@@ -167,7 +167,7 @@ namespace SudokuLibrary
                 }
             }
             IEnumerable<int?> digits = from cell in region where cell.Digit != null select cell.Digit;
-            return SudokuUtil.AllDifferent(digits);
+            return Util.AllDifferent(digits);
         }
 
         public bool ValidateRegions()

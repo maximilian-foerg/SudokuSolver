@@ -8,7 +8,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SudokuSolver", "SudokuSolve
 		{820A48E7-37DA-4B10-AC85-A9FB24D18BBA} = {820A48E7-37DA-4B10-AC85-A9FB24D18BBA}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SudokuSolver.Tests", "SudokuSolver.Tests\SudokuSolver.Tests.csproj", "{A5D5AE53-3688-4FB8-AACD-92296B3BDFB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SudokuLibrary.Tests", "SudokuLibrary.Tests\SudokuLibrary.Tests.csproj", "{A5D5AE53-3688-4FB8-AACD-92296B3BDFB3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{820A48E7-37DA-4B10-AC85-A9FB24D18BBA} = {820A48E7-37DA-4B10-AC85-A9FB24D18BBA}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SudokuControl", "SudokuControl\SudokuControl.csproj", "{D814350F-678F-424C-A7E8-DE7161E7DAF4}"
 	ProjectSection(ProjectDependencies) = postProject
