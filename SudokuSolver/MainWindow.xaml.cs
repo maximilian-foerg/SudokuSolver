@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using Microsoft.Win32;
 using SudokuLibrary;
 
 namespace SudokuSolver
@@ -32,8 +32,9 @@ namespace SudokuSolver
 
         private void LoadSudokuFromFile(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog
+            var dialog = new OpenFileDialog
             {
+                DefaultExt = ".sdk",
                 Filter = "Sudoku files (.sdk)|*.sdk"
             };
             bool? result = dialog.ShowDialog();
@@ -47,7 +48,17 @@ namespace SudokuSolver
 
         private void LoadSudokuFromString(object sender, RoutedEventArgs e)
         {
-
+            var dialog = new EnterSudokuStringDialog
+            {
+                Owner = this
+            };
+            bool? result = dialog.ShowDialog();
+            if (result == true)
+            {
+                string sudokuString = dialog.SudokuString;
+                sudoku = SudokuParser.ParseSudoku(sudokuString);
+                sudokuBoard.DisplaySudoku(sudoku);
+            }
         }
 
         private void SolveSudoku(object sender, RoutedEventArgs e)

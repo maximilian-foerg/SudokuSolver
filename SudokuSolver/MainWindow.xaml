@@ -9,23 +9,33 @@
         ResizeMode="CanMinimize"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen">
-    <Grid>
+    <Grid Margin="10">
+        <Grid.Resources>
+            <Style TargetType="{x:Type Button}">
+                <Setter Property="Width" Value="100" />
+                <Setter Property="Height" Value="25" />
+                <Setter Property="Margin" Value="5,0,0,0" />
+            </Style>
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="160"/>
-            <ColumnDefinition Width="160"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-        <Button Name="loadFromFileButton" Grid.Column="0" Grid.Row="0" Margin="5" Click="LoadSudokuFromFile">Load from file</Button>
-        <Button Name="enterAsStringButton" Grid.Column="1" Grid.Row="0" Margin="5" Click="LoadSudokuFromString">Enter as string</Button>
-        <local:SudokuBoard Name="sudokuBoard" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="5" HorizontalAlignment="Center"/>
-        <ComboBox Name="solverComboBox" Grid.Column="0" Grid.Row="2" Margin="5">
-            <ComboBoxItem IsSelected="true">Backtracking</ComboBoxItem>
-            <ComboBoxItem>Constraint Propagation</ComboBoxItem>
-        </ComboBox>
-        <Button Name="solveButton" Grid.Column="1" Grid.Row="2" Margin="5" Click="SolveSudoku">Solve</Button>
+        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Name="loadFromFileButton" Grid.Column="0" Grid.Row="0" Click="LoadSudokuFromFile">Load from file</Button>
+            <Button Name="enterAsStringButton" Grid.Column="1" Grid.Row="0" Click="LoadSudokuFromString">Enter as string</Button>
+        </StackPanel>
+        <local:SudokuBoard Name="sudokuBoard" Grid.Column="0" Grid.Row="1" Margin="5" HorizontalAlignment="Center"/>
+        <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ComboBox Name="solverComboBox" Grid.Column="0" Grid.Row="2" Height="25" MinWidth="160" Margin="5,0,0,0">
+                <ComboBoxItem IsSelected="true">Backtracking</ComboBoxItem>
+                <ComboBoxItem>Constraint Propagation</ComboBoxItem>
+            </ComboBox>
+            <Button Name="solveButton" Grid.Column="1" Grid.Row="2" Click="SolveSudoku">Solve</Button>
+        </StackPanel>
     </Grid>
 </Window>

@@ -7,8 +7,8 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <DataTemplate x:Key="CellTemplate">
-            <Border BorderBrush="Gray" BorderThickness="1" MinHeight="30" MinWidth="30">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Text="{Binding Path=Digit}"/>
+            <Border BorderBrush="Gray" BorderThickness="0.5" MinHeight="20" MinWidth="20">
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" Text="{Binding Path=Digit}"/>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="SudokuGridTemplate">
