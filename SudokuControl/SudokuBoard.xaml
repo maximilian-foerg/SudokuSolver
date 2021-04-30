@@ -3,12 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SudokuControl"
              mc:Ignorable="d">
     <UserControl.Resources>
         <DataTemplate x:Key="CellTemplate">
             <Border BorderBrush="Gray" BorderThickness="0.5" MinHeight="20" MinWidth="20">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" Text="{Binding Path=Digit}"/>
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" Text="{Binding Path=Digit}" />
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="SudokuGridTemplate">

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 using SudokuLibrary;
@@ -65,30 +66,43 @@ namespace SudokuSolver
 
         private void SolveSudoku(object sender, RoutedEventArgs e)
         {
+            if (sudoku.IsEmpty())
+            {
+                MessageBox.Show("This sudoku is empty.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (!sudoku.IsValidState())
             {
                 MessageBox.Show("This sudoku is not in an valid state.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            if (sudoku.IsSolved())
+            {
+                MessageBox.Show("This Sudoku is already solved.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             ComboBoxItem selectedItem = (ComboBoxItem) solverComboBox.SelectedItem;
             string solverName = selectedItem.Content.ToString();
-            ISudokuSolver solver;
-            Sudoku solution;
             switch(solverName)
             {
                 case "Backtracking":
-                    solver = new BacktrackingSudokuSolver();
-                    solution = solver.SolveSudoku(sudoku);
-                    sudokuBoard.DisplaySudoku(solution);
+                    SolveSudoku(new BacktrackingSudokuSolver());
                     break;
                 case "Constraint Propagation":
-                    solver = new ConstraintPropagationSudokuSolver();
-                    solution = solver.SolveSudoku(sudoku);
-                    sudokuBoard.DisplaySudoku(solution);
+                    SolveSudoku(new ConstraintPropagationSudokuSolver());
                     break;
                 default:
                     break;
             }
+        }
+
+        private void SolveSudoku(ISudokuSolver solver)
+        {
+            Sudoku assignment = solver.SolveSudoku(sudoku);
+            if (assignment.IsSolved())
+                sudokuBoard.DisplaySudoku(assignment);
+            else
+                MessageBox.Show("The Sudoku could not be solved.", "Unsolvable", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

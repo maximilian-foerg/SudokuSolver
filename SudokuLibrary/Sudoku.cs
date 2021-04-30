@@ -84,6 +84,18 @@ namespace SudokuLibrary
             return this.IsUnassigned(f.X, f.Y);
         }
 
+        public bool IsEmpty()
+        {
+            for (int x = 0; x < Size; x++)
+            {
+                for (int y = 0; y < Size; y++)
+                {
+                    if (!IsUnassigned(x, y)) return false;
+                }
+            }
+            return true;
+        }
+
         public bool IsValidDigit(int x, int y, int digit)
         {
             for (int i = 0; i < Size; i++)
@@ -198,7 +210,7 @@ namespace SudokuLibrary
             return true;
         }
 
-        public Boolean IsSolved()
+        public bool IsSolved()
         {
             return this.IsCompletelyFilled() & this.IsValidState();
         }
@@ -255,6 +267,8 @@ namespace SudokuLibrary
 
     public class Cell : INotifyPropertyChanged
     {
+        private readonly IEnumerable<int> possibleDigits = Enumerable.Range(1, Sudoku.Size);
+
         private bool isEditable;
         private int? digit = null;
 
@@ -291,6 +305,14 @@ namespace SudokuLibrary
                     this.digit = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Digit"));
                 }
+            }
+        }
+
+        public IEnumerable<int> PossibleDigits
+        {
+            get
+            {
+                return this.possibleDigits;
             }
         }
     }
