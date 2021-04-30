@@ -1,75 +1,96 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SudokuLibrary
 {
     public class ConstraintPropagationSudokuSolver : ISudokuSolver
     {
-        public Sudoku SolveSudoku(Sudoku sudoku)
+        private CancellationTokenSource cts;
+
+        public async Task SolveSudokuAsync(Sudoku sudoku)
+        {
+            cts = new();
+            Task task = Task.Run(() => SolveSudoku(sudoku), cts.Token);
+            await task;
+        }
+
+        public void Cancel()
+        {
+            if (cts != null)
+                cts.Cancel();
+        }
+
+        private void SolveSudoku(Sudoku sudoku)
         {
             DomainStore dstore = new(sudoku);
-            return Search(dstore);
+            Search(dstore, sudoku);
         }
 
-        private Sudoku Search(DomainStore dstore)
+        private void Search(DomainStore dstore, Sudoku sudoku)
         {
+            if (cts.IsCancellationRequested)
+            {
+                return;
+            }
             // Try to solve sudoku via constraint propagation only
             while(Propagate(dstore)) {}
-            Sudoku assignment = dstore.ToSudoku();
-            if (assignment.IsSolved())
+            dstore.UpdateSudoku(sudoku);
+            if (sudoku.IsSolved())
             {
-                return assignment;
+                return;
             }
             // If this didn't work, perform a recursive search
-            return SearchRec(dstore);
+            SearchRec(dstore, sudoku);
         }
 
-        private Sudoku SearchRec(DomainStore dstore)
+        private void SearchRec(DomainStore dstore, Sudoku sudoku)
         {
-            // Select the sudoku field with the smallest domain and try to fill it first
+            // Select the sudoku cell with the smallest domain and try to fill it first
             Field f = dstore.GetFieldWithSmallestDomain();
             if (f == null)
             {
-                // There's no field with a domain size > 1 left, the sudoku is filled completely
-                return dstore.ToSudoku();
+                // There's no cell with a domain size > 1 left, the sudoku is filled completely
+                dstore.UpdateSudoku(sudoku);
+                return;
             }
-            // Try to solve the sudoku with every possible value of the field's domain
+            // Try to solve the sudoku with every possible value of the cell's domain
             HashSet<int> domain = dstore.GetDomain(f);
             foreach (int digit in domain)
             {
                 DomainStore dstoreClone = new(dstore);
                 dstoreClone.SetDomain(f, new HashSet<int>() {digit});
-                try
+                Search(dstoreClone, sudoku);
+                if (sudoku.IsSolved())
                 {
-                    Sudoku assignment = this.Search(dstoreClone);
-                    if (assignment.IsSolved())
-                    {
-                        return assignment;
-                    }
+                    return;
                 }
-                catch (UnsolvableStateException)
+                else
                 {
-                    // Constraint propagation unveiled a field with an empty domain, i.e. the current assignment can't be solved
-                    // Prune this DomainStore and take a step back
-                    continue;
+                    // Prune this try and take a step back
+                    dstore.UpdateSudoku(sudoku);
                 }
             }
-            return dstore.ToSudoku();
         }
 
-        private Boolean Propagate(DomainStore dstore)
+        private bool Propagate(DomainStore dstore)
         {
-            Boolean domainsHaveChanged = EliminateRowValues(dstore);
+            if (cts.IsCancellationRequested)
+            {
+                return false;
+            }
+            bool domainsHaveChanged = EliminateRowValues(dstore);
             domainsHaveChanged ^= EliminateColumnValues(dstore);
             domainsHaveChanged ^= EliminateRegionValues(dstore);
             return domainsHaveChanged;
         }
 
-        private Boolean Eliminate(DomainStore dstore, IEnumerable<Field> fields)
+        private bool Eliminate(DomainStore dstore, IEnumerable<Field> fields)
         {
-            Boolean domainsHaveChanged = false;
-            // Go through the fields and remeber the values you see
+            bool domainsHaveChanged = false;
+            // Go through the cells and remeber the digits you see
             HashSet<int> seenDigits = new();
             foreach (Field f in fields)
             {
@@ -83,23 +104,23 @@ namespace SudokuLibrary
                     }
                 }
             }
-            // Now, go through the fields again and update each fields domain considering the values you saw in the other fields
+            // Now, go through the cells again and update each cell's domain considering the digits you saw in the other cells
             foreach (Field f in fields)
             {
-                // If a field's domain has just a single value left, it does not have to be changed anymore
+                // If a cells's domain has just a single digit left, it does not have to be changed anymore
                 if (dstore.GetDomainSize(f) == 1)
                 {
                     continue;
                 }
                 HashSet<int> domain = dstore.GetDomain(f);
-                HashSet<int> impossibleValues = new(seenDigits);
-                HashSet<int> subtraction = Util.Subtract(domain, impossibleValues);
-                // Prune this try if no value can't be assigned to a field
+                HashSet<int> impossibleDigits = new(seenDigits);
+                HashSet<int> subtraction = Util.Subtract(domain, impossibleDigits);
+                // Prune this try if no digit can't be assigned to the cell
                 if (subtraction.Count == 0)
                 {
-                    throw new UnsolvableStateException();
+                    return false;
                 }
-                // If a field's domain has to be updated based on the seen values, do it and note that there was a change
+                // If a cell's domain has to be updated based on the seen digits, do it and note that there was a change
                 if (!domain.SetEquals(subtraction))
                 {
                     domainsHaveChanged = true;
@@ -109,9 +130,9 @@ namespace SudokuLibrary
             return domainsHaveChanged;
         }
 
-        private Boolean EliminateRowValues(DomainStore dstore)
+        private bool EliminateRowValues(DomainStore dstore)
         {
-            Boolean domainsHaveChanged = false;
+            bool domainsHaveChanged = false;
             for (int x = 0; x < Sudoku.Size; x++)
             {
                 List<Field> row = new();
@@ -125,9 +146,9 @@ namespace SudokuLibrary
             return domainsHaveChanged;
         }
 
-        private Boolean EliminateColumnValues(DomainStore dstore)
+        private bool EliminateColumnValues(DomainStore dstore)
         {
-            Boolean domainsHaveChanged = false;
+            bool domainsHaveChanged = false;
             for (int y = 0; y < Sudoku.Size; y++)
             {
                 List<Field> column = new();
@@ -141,9 +162,9 @@ namespace SudokuLibrary
             return domainsHaveChanged;
         }
 
-        private Boolean EliminateRegionValues(DomainStore dstore)
+        private bool EliminateRegionValues(DomainStore dstore)
         {
-            Boolean domainsHaveChanged = false;
+            bool domainsHaveChanged = false;
             for (int i = 0; i < Sudoku.Size; i++)
             {
                 List<Field> region = new();
@@ -161,7 +182,7 @@ namespace SudokuLibrary
     }
 
     [System.Serializable]
-    public class UnsolvableStateException : System.Exception
+    public class UnsolvableStateException : Exception
     {
         public UnsolvableStateException() {}
     }
@@ -178,7 +199,7 @@ namespace SudokuLibrary
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    this.SetDomain(x, y, Sudoku.possibleDigits);
+                    this.SetDomain(x, y, Sudoku.PossibleDigits);
                 }
             }
         }
@@ -192,7 +213,7 @@ namespace SudokuLibrary
                 {
                     if (sudoku.IsUnassigned(x, y))
                     {
-                        this.SetDomain(x, y, Sudoku.possibleDigits);
+                        this.SetDomain(x, y, Sudoku.PossibleDigits);
                     }
                     else
                     {
@@ -306,7 +327,7 @@ namespace SudokuLibrary
         public Field GetFieldWithSmallestDomain()
         {
             Field field = null;
-            // Fields with a domain size of 1 (index 0) are ignored, as their value is already fixed
+            // Cells with a domain size of 1 (index 0) are ignored, as their digit is already fixed
             for (int i = 1; i < Sudoku.Size; i++)
             {
                 if (fieldsByDomainSize[i].Count > 0)
@@ -322,9 +343,8 @@ namespace SudokuLibrary
             return field;
         }
 
-        public Sudoku ToSudoku()
+        public Sudoku UpdateSudoku(Sudoku sudoku)
         {
-            Sudoku sudoku = new();
             for (int x = 0; x < Sudoku.Size; x++)
             {
                 for (int y = 0; y < Sudoku.Size; y++)
@@ -332,7 +352,7 @@ namespace SudokuLibrary
                     HashSet<int> domain = this.GetDomain(x, y);
                     if (domain.Count == 1)
                     {
-                        foreach (int val in domain)
+                        foreach (int val in domain) // Workaround to access first HashSet value fast
                         {
                             sudoku.SetCellDigit(x, y, val);
                             break;

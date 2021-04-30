@@ -1,7 +1,11 @@
+using System.Threading.Tasks;
+
 namespace SudokuLibrary
 {
     public interface ISudokuSolver
     {
-        Sudoku SolveSudoku(Sudoku sudoku);
+        Task SolveSudokuAsync(Sudoku sudoku);
+
+        void Cancel();
     }
 }

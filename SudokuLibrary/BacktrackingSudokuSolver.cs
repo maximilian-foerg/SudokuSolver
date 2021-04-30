@@ -1,27 +1,47 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SudokuLibrary
 {
     public class BacktrackingSudokuSolver : ISudokuSolver
     {
+        private CancellationTokenSource cts;
+
         public BacktrackingSudokuSolver() {}
 
-        public Sudoku SolveSudoku(Sudoku sudoku)
+        public async Task SolveSudokuAsync(Sudoku sudoku)
         {
-            List<Field> unassignedFields = GetUnassignedFields(sudoku);
-            return this.SolveSudoku(sudoku, unassignedFields, 0);
+            cts = new();
+            Task task = Task.Run(() => SolveSudoku(sudoku), cts.Token);
+            await task;
         }
 
-        private Sudoku SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
+        public void Cancel()
         {
-            if (fieldIndex == unassignedFields.Count)
+            if (cts != null)
+                cts.Cancel();
+        }
+
+        private void SolveSudoku(Sudoku sudoku)
+        {
+            List<Field> unassignedFields = GetUnassignedFields(sudoku);
+            this.SolveSudoku(sudoku, unassignedFields, 0);
+        }
+
+        private void SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
+        {
+            if (cts.IsCancellationRequested)
             {
-                return sudoku;
+                return;
+            }
+            else if (fieldIndex == unassignedFields.Count)
+            {
+                return;
             }
             Field nextField = unassignedFields.ElementAt(fieldIndex);
-            foreach (int val in Sudoku.possibleDigits)
+            foreach (int val in Sudoku.PossibleDigits)
             {
                 if (sudoku.IsValidDigit(nextField, val))
                 {
@@ -29,7 +49,7 @@ namespace SudokuLibrary
                     SolveSudoku(sudoku, unassignedFields, fieldIndex + 1);
                     if (sudoku.IsSolved())
                     {
-                        return sudoku;
+                        return;
                     }
                     else
                     {
@@ -37,7 +57,6 @@ namespace SudokuLibrary
                     }
                 }
             }
-            return sudoku;
         }
 
         private static List<Field> GetUnassignedFields(Sudoku sudoku)

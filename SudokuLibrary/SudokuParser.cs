@@ -48,10 +48,6 @@ namespace SudokuLibrary
 
         public static async Task ToFile(Sudoku sudoku, String filename)
         {
-            if (!filename.EndsWith(".sdk"))
-            {
-                filename += ".sdk";
-            }
             string[] lines = new string[Sudoku.Size];
             for (int x = 0; x < Sudoku.Size; x++)
             {

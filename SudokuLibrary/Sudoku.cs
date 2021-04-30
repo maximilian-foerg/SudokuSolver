@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,18 +7,17 @@ namespace SudokuLibrary
 {
     public class Sudoku
     {
-        public static readonly int Size = 9;
-        public static readonly int RegionSize = 3;
-        public static readonly IEnumerable<int> possibleDigits = Enumerable.Range(1, Sudoku.Size);
-
+        private static readonly int size = 9;
+        private static readonly int regionSize = 3;
+        private static readonly IEnumerable<int> possibleDigits = Enumerable.Range(1, Sudoku.size);
         private readonly List<List<Cell>> board = new();
 
         public Sudoku()
         {
-            for (int x = 0; x < Size; x++)
+            for (int x = 0; x < Sudoku.Size; x++)
             {
                 board.Add(new());
-                for (int y = 0; y < Size; y++)
+                for (int y = 0; y < Sudoku.Size; y++)
                 {
                     board[x].Add(new());
                 }
@@ -29,6 +27,21 @@ namespace SudokuLibrary
         public Sudoku Clone()
         {
             return (Sudoku)this.MemberwiseClone();
+        }
+
+        public static int Size
+        {
+            get { return size; } 
+        }
+
+        public static int RegionSize
+        {
+            get { return regionSize; }
+        }
+
+        public static IEnumerable<int> PossibleDigits
+        {
+            get { return possibleDigits; }
         }
 
         public void SetCellDigit(int x, int y, int digit)
@@ -86,9 +99,9 @@ namespace SudokuLibrary
 
         public bool IsEmpty()
         {
-            for (int x = 0; x < Size; x++)
+            for (int x = 0; x < Sudoku.Size; x++)
             {
-                for (int y = 0; y < Size; y++)
+                for (int y = 0; y < Sudoku.Size; y++)
                 {
                     if (!IsUnassigned(x, y)) return false;
                 }
@@ -98,17 +111,17 @@ namespace SudokuLibrary
 
         public bool IsValidDigit(int x, int y, int digit)
         {
-            for (int i = 0; i < Size; i++)
+            for (int i = 0; i < Sudoku.Size; i++)
             {
                 if (board[x][i].Digit == digit ^ board[i][y].Digit == digit)
                     return false;
             }
-            for (int rx = 0; rx < RegionSize; rx++)
+            for (int rx = 0; rx < Sudoku.RegionSize; rx++)
             {
-                for (int ry = 0; ry < RegionSize; ry++)
+                for (int ry = 0; ry < Sudoku.RegionSize; ry++)
                 {
-                    int globalX = (x / RegionSize) * RegionSize + rx;
-                    int globalY = (y / RegionSize) * RegionSize + ry;
+                    int globalX = (x / Sudoku.RegionSize) * Sudoku.RegionSize + rx;
+                    int globalY = (y / Sudoku.RegionSize) * Sudoku.RegionSize + ry;
                     if (board[globalX][globalY].Digit == digit)
                         return false;
                 }
@@ -135,7 +148,7 @@ namespace SudokuLibrary
 
         public bool ValidateRows()
         {
-            for (int x = 0; x < Size; x++)
+            for (int x = 0; x < Sudoku.Size; x++)
             {
                 if (!IsValidRow(x))
                 {
@@ -154,7 +167,7 @@ namespace SudokuLibrary
 
         public bool ValidateColumns()
         {
-            for (int y = 0; y < Size; y++)
+            for (int y = 0; y < Sudoku.Size; y++)
             {
                 if (!IsValidColumn(y))
                 {
@@ -166,10 +179,10 @@ namespace SudokuLibrary
 
         public bool IsValidRegion(int regionX, int regionY)
         {
-            int fromX = regionX * RegionSize;
-            int toX = fromX + RegionSize;
-            int fromY = regionY * RegionSize;
-            int toY = fromY + RegionSize;
+            int fromX = regionX * Sudoku.RegionSize;
+            int toX = fromX + Sudoku.RegionSize;
+            int fromY = regionY * Sudoku.RegionSize;
+            int toY = fromY + Sudoku.RegionSize;
             List<Cell> region = new();
             for (int x = fromX; x < toX; x++)
             {
@@ -184,9 +197,9 @@ namespace SudokuLibrary
 
         public bool ValidateRegions()
         {
-            for (int x = 0; x < RegionSize; x++)
+            for (int x = 0; x < Sudoku.RegionSize; x++)
             {
-                for (int y = 0; y < RegionSize; y++)
+                for (int y = 0; y < Sudoku.RegionSize; y++)
                 {
                     if (!IsValidRegion(x, y))
                     {
@@ -218,16 +231,16 @@ namespace SudokuLibrary
         public override string ToString()
         {
             StringBuilder sudokuAsString = new();
-            string lineSeparator = new('-', Size * 2 + RegionSize * 2 + 1);
-            for (int x = 0; x < Size; x++)
+            string lineSeparator = new('-', Sudoku.Size * 2 + Sudoku.RegionSize * 2 + 1);
+            for (int x = 0; x < Sudoku.Size; x++)
             {
-                if (x % RegionSize == 0)
+                if (x % Sudoku.RegionSize == 0)
                 {
                     sudokuAsString.Append(lineSeparator + "\n");
                 }
-                for (int y = 0; y < Size; y++)
+                for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    if (y % RegionSize == 0)
+                    if (y % Sudoku.RegionSize == 0)
                     {
                         sudokuAsString.Append("| ");
                     }
@@ -246,9 +259,9 @@ namespace SudokuLibrary
             {
                 return false;
             }
-            for (int x = 0; x < Size; x++)
+            for (int x = 0; x < Sudoku.Size; x++)
             {
-                for (int y = 0; y < Size; y++)
+                for (int y = 0; y < Sudoku.Size; y++)
                 {
                     if (this.GetCellDigit(x, y) != other.GetCellDigit(x, y))
                     {
@@ -265,32 +278,16 @@ namespace SudokuLibrary
         }
     }
 
+    /// <summary>Class Cell represents a cell of a sudoku.</summary>
     public class Cell : INotifyPropertyChanged
     {
-        private readonly IEnumerable<int> possibleDigits = Enumerable.Range(1, Sudoku.Size);
+        private static readonly IEnumerable<int> possibleDigits = Sudoku.PossibleDigits;
 
-        private bool isEditable;
         private int? digit = null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Cell() {}
-
-        public bool IsEditable
-        {
-            get
-            {
-                return this.isEditable;
-            }
-            set
-            {
-                if (this.isEditable != value)
-                {
-                    this.isEditable = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsEditable"));
-                }
-            }
-        }
 
         public int? Digit
         {
@@ -308,15 +305,16 @@ namespace SudokuLibrary
             }
         }
 
-        public IEnumerable<int> PossibleDigits
+        public static IEnumerable<int> PossibleDigits
         {
             get
             {
-                return this.possibleDigits;
+                return possibleDigits;
             }
         }
     }
 
+    /// <summary>A wrapper class for x/y coordinates.</summary>
     public class Field
     {
         private int x;

@@ -28,7 +28,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <TextBox Name="sudokuStringTextBox" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" MinWidth="300" />
+        <TextBox Name="sudokuStringTextBox" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" MinWidth="600" />
         <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Name="okButton" Click="OkButtonClick" IsDefault="True">OK</Button>
             <Button Name="cancelButton" Click="CancelButtonClick" IsCancel="True">Cancel</Button>
