@@ -1,7 +1,7 @@
 using SudokuLibrary;
 using System.Windows.Controls;
 
-namespace SudokuControl
+namespace SudokuSolver
 {
     /// <summary>
     /// Interaction logic for SudokuBoard.xaml

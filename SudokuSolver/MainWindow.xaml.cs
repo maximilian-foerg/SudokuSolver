@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 using SudokuLibrary;
@@ -73,7 +72,7 @@ namespace SudokuSolver
             }
             if (!sudoku.IsValidState())
             {
-                MessageBox.Show("This sudoku is not in an valid state.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("This sudoku is not in a valid state.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (sudoku.IsSolved())
