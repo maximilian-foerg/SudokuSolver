@@ -42,7 +42,7 @@ namespace SudokuLibrary
             {
                 return;
             }
-            // If this didn't work, perform a recursive search
+            // If that didn't work, perform a recursive search
             SearchRec(dstore, sudoku);
         }
 
@@ -97,7 +97,7 @@ namespace SudokuLibrary
                 if (dstore.GetDomainSize(f) == 1)
                 {
                     HashSet<int> domain = dstore.GetDomain(f);
-                    foreach (int digit in domain)
+                    foreach (int digit in domain) // Workaround to access first HashSet value quickly
                     {
                         seenDigits.Add(digit);
                         break;
@@ -179,12 +179,6 @@ namespace SudokuLibrary
             }
             return domainsHaveChanged;
         }
-    }
-
-    [System.Serializable]
-    public class UnsolvableStateException : Exception
-    {
-        public UnsolvableStateException() {}
     }
 
     class DomainStore
@@ -310,9 +304,9 @@ namespace SudokuLibrary
         public void RemoveDomainValue(int x, int y, int val)
         {
             int domainSize = this.GetDomainSize(x, y);
-            if (domainSize > 1)
+            if (domainSize > 1) // You can't remove the last value
             {
-                Field f = new Field(x, y);
+                Field f = new(x, y);
                 fieldsByDomainSize[domainSize - 1].Remove(f);
                 store[x, y].Remove(val);
                 fieldsByDomainSize[domainSize - 2].Add(f);
@@ -332,7 +326,7 @@ namespace SudokuLibrary
             {
                 if (fieldsByDomainSize[i].Count > 0)
                 {
-                    foreach (Field f in fieldsByDomainSize[i])
+                    foreach (Field f in fieldsByDomainSize[i]) // Workaround to access first HashSet value quickly
                     {
                         field = f;
                         break;
@@ -343,7 +337,7 @@ namespace SudokuLibrary
             return field;
         }
 
-        public Sudoku UpdateSudoku(Sudoku sudoku)
+        public void UpdateSudoku(Sudoku sudoku)
         {
             for (int x = 0; x < Sudoku.Size; x++)
             {
@@ -352,7 +346,7 @@ namespace SudokuLibrary
                     HashSet<int> domain = this.GetDomain(x, y);
                     if (domain.Count == 1)
                     {
-                        foreach (int val in domain) // Workaround to access first HashSet value fast
+                        foreach (int val in domain) // Workaround to access first HashSet value quickly
                         {
                             sudoku.SetCellDigit(x, y, val);
                             break;
@@ -364,7 +358,6 @@ namespace SudokuLibrary
                     }
                 }
             }
-            return sudoku;
         }
 
         public override string ToString()
