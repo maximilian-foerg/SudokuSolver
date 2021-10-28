@@ -3,36 +3,38 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SudokuLibrary
+namespace SudokuLibrary.Solvers
 {
     public class BacktrackingSudokuSolver : ISudokuSolver
     {
-        private CancellationTokenSource cts;
+        private CancellationTokenSource _cts;
 
-        public BacktrackingSudokuSolver() {}
+        public BacktrackingSudokuSolver()
+        {
+        }
 
         public async Task SolveSudokuAsync(Sudoku sudoku)
         {
-            cts = new();
-            Task task = Task.Run(() => SolveSudoku(sudoku), cts.Token);
+            _cts = new();
+            Task task = Task.Run(() => SolveSudoku(sudoku), _cts.Token);
             await task;
         }
 
         public void Cancel()
         {
-            if (cts != null)
-                cts.Cancel();
+            if (_cts != null)
+                _cts.Cancel();
         }
 
         private void SolveSudoku(Sudoku sudoku)
         {
             List<Field> unassignedFields = GetUnassignedFields(sudoku);
-            this.SolveSudoku(sudoku, unassignedFields, 0);
+            SolveSudoku(sudoku, unassignedFields, 0);
         }
 
         private void SolveSudoku(Sudoku sudoku, List<Field> unassignedFields, int fieldIndex)
         {
-            if (cts.IsCancellationRequested)
+            if (_cts.IsCancellationRequested)
             {
                 return;
             }
@@ -40,6 +42,7 @@ namespace SudokuLibrary
             {
                 return;
             }
+
             Field nextField = unassignedFields.ElementAt(fieldIndex);
             foreach (int val in Sudoku.PossibleDigits)
             {

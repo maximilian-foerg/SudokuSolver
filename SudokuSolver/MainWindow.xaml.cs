@@ -1,10 +1,10 @@
-﻿using System.IO;
-using System.Threading;
+﻿using Microsoft.Win32;
+using SudokuLibrary;
+using SudokuLibrary.IO;
+using SudokuLibrary.Solvers;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;
-using SudokuLibrary;
 
 namespace SudokuSolver
 {
@@ -116,9 +116,11 @@ namespace SudokuSolver
                 case "Backtracking":
                     SolveSudoku(new BacktrackingSudokuSolver());
                     break;
+
                 case "Constraint Propagation":
                     SolveSudoku(new ConstraintPropagationSudokuSolver());
                     break;
+
                 default:
                     break;
             }

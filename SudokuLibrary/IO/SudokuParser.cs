@@ -4,37 +4,38 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SudokuLibrary
+namespace SudokuLibrary.IO
 {
     public class SudokuParser
     {
-        private static readonly string lineRegex = "^[1-" + Sudoku.Size + "\\.]{" + Sudoku.Size + "}$"; // f.e. "^[1-9\.]{9}$" for Sudoku.Size = 9
+        // f.e. "^[1-9\.]{9}$" for Sudoku.Size = 9
+        private static readonly Regex s_lineRegex = new("^[1-" + Sudoku.Size + "\\.]{" + Sudoku.Size + "}$", RegexOptions.Compiled);
 
         public static Sudoku FromFile(string filename)
         {
             string[] lines = File.ReadAllLines(filename);
             if (lines.Length != Sudoku.Size)
             {
-                throw new InvalidSudokuFormatException(String.Format("Wrong number of rows ({0}, should be {1})", lines.Length, Sudoku.Size));
+                throw new InvalidSudokuFormatException($"Wrong number of rows ({lines.Length}, should be {Sudoku.Size})");
             }
             Sudoku sudoku = new();
             for (int x = 0; x < Sudoku.Size; x++)
             {
-                String line = lines[x];
+                string line = lines[x];
                 if (line.Length != Sudoku.Size)
                 {
-                    throw new InvalidSudokuFormatException(String.Format("Wrong number of columns on line {0} ({1}, should be {2})", x + 1, line.Length, Sudoku.Size));
+                    throw new InvalidSudokuFormatException($"Wrong number of columns on line {x + 1} ({line.Length}, should be {Sudoku.Size})");
                 }
                 if (!CheckLineFormat(line))
                 {
-                    throw new InvalidSudokuFormatException(String.Format("Line {0} is of invalid form", x + 1));
+                    throw new InvalidSudokuFormatException($"Line {x + 1} is of invalid form");
                 }
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
                     char c = line[y];
                     if (!c.Equals('.'))
                     {
-                        sudoku.SetCellDigit(x, y, (int) Char.GetNumericValue(c));
+                        sudoku.SetCellDigit(x, y, (int)char.GetNumericValue(c));
                     }
                 }
             }
@@ -43,10 +44,10 @@ namespace SudokuLibrary
 
         private static bool CheckLineFormat(string line)
         {
-            return Regex.IsMatch(line, lineRegex);
+            return s_lineRegex.IsMatch(line);
         }
 
-        public static async Task ToFile(Sudoku sudoku, String filename)
+        public static async Task ToFile(Sudoku sudoku, string filename)
         {
             string[] lines = new string[Sudoku.Size];
             for (int x = 0; x < Sudoku.Size; x++)
@@ -56,11 +57,11 @@ namespace SudokuLibrary
                 {
                     if (sudoku.IsUnassigned(x, y))
                     {
-                        sb.Append('.');
+                        _ = sb.Append('.');
                     }
                     else
                     {
-                        sb.Append(sudoku.GetCellDigit(x, y));
+                        _ = sb.Append(sudoku.GetCellDigit(x, y));
                     }
                 }
                 lines[x] = sb.ToString();
@@ -74,7 +75,7 @@ namespace SudokuLibrary
             for (int i = 0; i < sudokuString.Length; i++)
             {
                 Field f = Util.IndexToField(i, Sudoku.Size);
-                int number = int.Parse(sudokuString[i].ToString());
+                int number = int.Parse(sudokuString[i].ToString(), System.Globalization.NumberStyles.None);
                 if (number != 0)
                     sudoku.SetCellDigit(f.X, f.Y, number);
             }
@@ -82,9 +83,10 @@ namespace SudokuLibrary
         }
     }
 
-    [System.Serializable]
-    public class InvalidSudokuFormatException : System.Exception
+    public class InvalidSudokuFormatException : Exception
     {
-        public InvalidSudokuFormatException(String msg) : base ("The Sudoku has an invalid form: " + msg) {}
+        public InvalidSudokuFormatException(string msg) : base("The Sudoku has an invalid form: " + msg)
+        {
+        }
     }
 }

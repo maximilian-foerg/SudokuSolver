@@ -1,4 +1,5 @@
-using SudokuLibrary;
+using SudokuLibrary.IO;
+using SudokuLibrary.Solvers;
 using Xunit;
 
 namespace SudokuLibrary.Tests

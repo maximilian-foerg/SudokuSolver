@@ -4,23 +4,23 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SudokuLibrary
+namespace SudokuLibrary.Solvers
 {
     public class ConstraintPropagationSudokuSolver : ISudokuSolver
     {
-        private CancellationTokenSource cts;
+        private CancellationTokenSource _cts;
 
         public async Task SolveSudokuAsync(Sudoku sudoku)
         {
-            cts = new();
-            Task task = Task.Run(() => SolveSudoku(sudoku), cts.Token);
+            _cts = new();
+            Task task = Task.Run(() => SolveSudoku(sudoku), _cts.Token);
             await task;
         }
 
         public void Cancel()
         {
-            if (cts != null)
-                cts.Cancel();
+            if (_cts != null)
+                _cts.Cancel();
         }
 
         private void SolveSudoku(Sudoku sudoku)
@@ -31,12 +31,12 @@ namespace SudokuLibrary
 
         private void Search(DomainStore dstore, Sudoku sudoku)
         {
-            if (cts.IsCancellationRequested)
+            if (_cts.IsCancellationRequested)
             {
                 return;
             }
             // Try to solve sudoku via constraint propagation only
-            while(Propagate(dstore)) {}
+            while (Propagate(dstore)) { }
             dstore.UpdateSudoku(sudoku);
             if (sudoku.IsSolved())
             {
@@ -61,7 +61,7 @@ namespace SudokuLibrary
             foreach (int digit in domain)
             {
                 DomainStore dstoreClone = new(dstore);
-                dstoreClone.SetDomain(f, new HashSet<int>() {digit});
+                dstoreClone.SetDomain(f, new HashSet<int>() { digit });
                 Search(dstoreClone, sudoku);
                 if (sudoku.IsSolved())
                 {
@@ -77,13 +77,13 @@ namespace SudokuLibrary
 
         private bool Propagate(DomainStore dstore)
         {
-            if (cts.IsCancellationRequested)
+            if (_cts.IsCancellationRequested)
             {
                 return false;
             }
             bool domainsHaveChanged = EliminateRowValues(dstore);
-            domainsHaveChanged ^= EliminateColumnValues(dstore);
-            domainsHaveChanged ^= EliminateRegionValues(dstore);
+            domainsHaveChanged |= EliminateColumnValues(dstore);
+            domainsHaveChanged |= EliminateRegionValues(dstore);
             return domainsHaveChanged;
         }
 
@@ -138,10 +138,10 @@ namespace SudokuLibrary
                 List<Field> row = new();
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    Field f = new (x, y);
+                    Field f = new(x, y);
                     row.Add(f);
                 }
-                domainsHaveChanged ^= Eliminate(dstore, row);
+                domainsHaveChanged |= Eliminate(dstore, row);
             }
             return domainsHaveChanged;
         }
@@ -157,7 +157,7 @@ namespace SudokuLibrary
                     Field f = new(x, y);
                     column.Add(f);
                 }
-                domainsHaveChanged ^= Eliminate(dstore, column);
+                domainsHaveChanged |= Eliminate(dstore, column);
             }
             return domainsHaveChanged;
         }
@@ -175,16 +175,16 @@ namespace SudokuLibrary
                     Field f = new(x, y);
                     region.Add(f);
                 }
-                domainsHaveChanged ^= Eliminate(dstore, region);
+                domainsHaveChanged |= Eliminate(dstore, region);
             }
             return domainsHaveChanged;
         }
     }
 
-    class DomainStore
+    internal class DomainStore
     {
-        private readonly HashSet<int>[,] store = new HashSet<int>[Sudoku.Size, Sudoku.Size];
-        private readonly HashSet<Field>[] fieldsByDomainSize = new HashSet<Field>[Sudoku.Size];
+        private readonly HashSet<int>[,] _store = new HashSet<int>[Sudoku.Size, Sudoku.Size];
+        private readonly HashSet<Field>[] _fieldsByDomainSize = new HashSet<Field>[Sudoku.Size];
 
         public DomainStore()
         {
@@ -193,7 +193,7 @@ namespace SudokuLibrary
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    this.SetDomain(x, y, Sudoku.PossibleDigits);
+                    SetDomain(x, y, Sudoku.PossibleDigits);
                 }
             }
         }
@@ -207,11 +207,11 @@ namespace SudokuLibrary
                 {
                     if (sudoku.IsUnassigned(x, y))
                     {
-                        this.SetDomain(x, y, Sudoku.PossibleDigits);
+                        SetDomain(x, y, Sudoku.PossibleDigits);
                     }
                     else
                     {
-                        this.AddDomainValue(x, y, sudoku.GetCellDigit(x, y));
+                        AddDomainValue(x, y, sudoku.GetCellDigit(x, y));
                     }
                 }
             }
@@ -224,7 +224,7 @@ namespace SudokuLibrary
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    this.SetDomain(x, y, dstore.GetDomain(x, y));
+                    SetDomain(x, y, dstore.GetDomain(x, y));
                 }
             }
         }
@@ -233,89 +233,89 @@ namespace SudokuLibrary
         {
             for (int i = 0; i < Sudoku.Size; i++)
             {
-                fieldsByDomainSize[i] = new HashSet<Field>();
+                _fieldsByDomainSize[i] = new HashSet<Field>();
             }
         }
 
         public HashSet<int> GetDomain(int x, int y)
         {
-            return store[x, y];
+            return _store[x, y];
         }
 
         public HashSet<int> GetDomain(Field f)
         {
-            return this.GetDomain(f.X, f.Y);
+            return GetDomain(f.X, f.Y);
         }
 
         public int GetDomainSize(int x, int y)
         {
-            return this.GetDomain(x, y).Count;
+            return GetDomain(x, y).Count;
         }
 
         public int GetDomainSize(Field f)
         {
-            return this.GetDomainSize(f.X, f.Y);
+            return GetDomainSize(f.X, f.Y);
         }
 
         public void SetDomain(int x, int y, IEnumerable<int> domain)
         {
             Field f = new(x, y);
-            if (this.GetDomain(f) == null)
+            if (GetDomain(f) is null)
             {
-                store[x, y] = new HashSet<int>();
+                _store[x, y] = new HashSet<int>();
             }
             else
             {
-                int oldDomainSize = this.GetDomainSize(x, y);
-                fieldsByDomainSize[oldDomainSize - 1].Remove(f);
+                int oldDomainSize = GetDomainSize(x, y);
+                _fieldsByDomainSize[oldDomainSize - 1].Remove(f);
             }
-            store[x, y] = new HashSet<int>(domain);
-            int newDomainSize = this.GetDomainSize(x, y);
-            fieldsByDomainSize[newDomainSize - 1].Add(f);
+            _store[x, y] = new HashSet<int>(domain);
+            int newDomainSize = GetDomainSize(x, y);
+            _fieldsByDomainSize[newDomainSize - 1].Add(f);
         }
 
         public void SetDomain(Field f, IEnumerable<int> domain)
         {
-            this.SetDomain(f.X, f.Y, domain);
+            SetDomain(f.X, f.Y, domain);
         }
 
         public void AddDomainValue(int x, int y, int val)
         {
             Field f = new(x, y);
-            if (this.GetDomain(f) == null)
+            if (GetDomain(f) == null)
             {
-                store[x, y] = new HashSet<int>() {val};
-                fieldsByDomainSize[0].Add(f);
+                _store[x, y] = new HashSet<int>() { val };
+                _fieldsByDomainSize[0].Add(f);
             }
             else
             {
-                int oldDomainSize = this.GetDomainSize(x, y);
-                fieldsByDomainSize[oldDomainSize - 1].Remove(f);
-                store[x, y].Add(val);
-                fieldsByDomainSize[oldDomainSize].Add(f);
+                int oldDomainSize = GetDomainSize(x, y);
+                _fieldsByDomainSize[oldDomainSize - 1].Remove(f);
+                _store[x, y].Add(val);
+                _fieldsByDomainSize[oldDomainSize].Add(f);
             }
         }
 
         public void AddDomainValue(Field f, int val)
         {
-            this.AddDomainValue(f.X, f.Y, val);
+            AddDomainValue(f.X, f.Y, val);
         }
 
         public void RemoveDomainValue(int x, int y, int val)
         {
-            int domainSize = this.GetDomainSize(x, y);
+            int domainSize = GetDomainSize(x, y);
             if (domainSize > 1) // You can't remove the last value
             {
                 Field f = new(x, y);
-                fieldsByDomainSize[domainSize - 1].Remove(f);
-                store[x, y].Remove(val);
-                fieldsByDomainSize[domainSize - 2].Add(f);
+                _fieldsByDomainSize[domainSize - 1].Remove(f);
+                _store[x, y].Remove(val);
+                _fieldsByDomainSize[domainSize - 2].Add(f);
             }
         }
 
         public void RemoveDomainValue(Field f, int val)
         {
-            this.RemoveDomainValue(f.Y, f.Y, val);
+            RemoveDomainValue(f.Y, f.Y, val);
         }
 
         public Field GetFieldWithSmallestDomain()
@@ -324,9 +324,9 @@ namespace SudokuLibrary
             // Cells with a domain size of 1 (index 0) are ignored, as their digit is already fixed
             for (int i = 1; i < Sudoku.Size; i++)
             {
-                if (fieldsByDomainSize[i].Count > 0)
+                if (_fieldsByDomainSize[i].Count > 0)
                 {
-                    foreach (Field f in fieldsByDomainSize[i]) // Workaround to access first HashSet value quickly
+                    foreach (Field f in _fieldsByDomainSize[i]) // Workaround to access first HashSet value quickly
                     {
                         field = f;
                         break;
@@ -343,7 +343,7 @@ namespace SudokuLibrary
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    HashSet<int> domain = this.GetDomain(x, y);
+                    HashSet<int> domain = GetDomain(x, y);
                     if (domain.Count == 1)
                     {
                         foreach (int val in domain) // Workaround to access first HashSet value quickly
@@ -362,17 +362,17 @@ namespace SudokuLibrary
 
         public override string ToString()
         {
-            StringBuilder dstoreAsString = new StringBuilder();
+            StringBuilder dstoreAsString = new();
             for (int x = 0; x < Sudoku.Size; x++)
             {
                 for (int y = 0; y < Sudoku.Size; y++)
                 {
-                    dstoreAsString.Append(String.Format("Field {0},{1}:", x, y));
-                    foreach (int val in store[x, y])
+                    dstoreAsString.Append(string.Format("Field {0},{1}:", x, y));
+                    foreach (int val in _store[x, y])
                     {
                         dstoreAsString.Append(" " + val);
                     }
-                    dstoreAsString.Append('\n');
+                    dstoreAsString.Append(Environment.NewLine);
                 }
             }
             return dstoreAsString.ToString();

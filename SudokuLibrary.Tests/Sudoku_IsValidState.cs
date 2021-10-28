@@ -1,4 +1,4 @@
-using SudokuLibrary;
+using SudokuLibrary.IO;
 using Xunit;
 
 namespace SudokuLibrary.Tests
