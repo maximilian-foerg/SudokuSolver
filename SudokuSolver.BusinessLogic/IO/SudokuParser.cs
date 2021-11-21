@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SudokuLibrary.IO
+namespace SudokuSolver.BusinessLogic.IO
 {
     public class SudokuParser
     {

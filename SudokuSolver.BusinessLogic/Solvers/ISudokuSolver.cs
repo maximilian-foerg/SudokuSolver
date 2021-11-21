@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace SudokuLibrary.Solvers
+namespace SudokuSolver.BusinessLogic.Solvers
 {
     public interface ISudokuSolver
     {

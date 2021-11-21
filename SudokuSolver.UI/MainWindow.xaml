@@ -1,0 +1,45 @@
+﻿<Window x:Class="SudokuSolver.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SudokuSolver.UI"
+        mc:Ignorable="d"
+        Title="Sudoku Solver"
+        ResizeMode="CanMinimize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Name="menuItemNew" Header="_New" Click="NewSudoku" />
+                <MenuItem Name="menuItemLoad" Header="_Load" Click="LoadSudokuFromFile"/>
+                <MenuItem Name="menuItemLoadFromString" Header="Load Sudoku _from string" Click="LoadSudokuFromString"/>
+                <MenuItem Name="menuItemSave" Header="_Save" Click="SaveSudoku" />
+                <Separator />
+                <MenuItem Header="_Exit" Click="ExitApp"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Instructions" Click="ShowInstructions" />
+                <MenuItem Header="_About" Click="ShowAbout" />
+            </MenuItem>
+        </Menu>
+        <StackPanel Orientation="Vertical" Margin="10">
+            <StackPanel.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Width" Value="100" />
+                    <Setter Property="Height" Value="25" />
+                    <Setter Property="Margin" Value="5,0,0,0" />
+                </Style>
+            </StackPanel.Resources>
+            <local:SudokuBoard x:Name="sudokuBoard" HorizontalAlignment="Center" MaxWidth="400" MaxHeight="400" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ComboBox Name="solverComboBox" Height="25" MinWidth="160" Margin="5,0,0,0">
+                    <ComboBoxItem IsSelected="true">Backtracking</ComboBoxItem>
+                    <ComboBoxItem>Constraint Propagation</ComboBoxItem>
+                </ComboBox>
+                <Button Name="solveButton" Click="SolveSudoku">Solve</Button>
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+</Window>

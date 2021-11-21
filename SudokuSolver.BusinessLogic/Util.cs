@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SudokuLibrary
+namespace SudokuSolver.BusinessLogic
 {
     public class Util
     {
